@@ -1,15 +1,23 @@
 package com.composeit.backend.scaleservice;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.composeit.backend.common.Constants;
 import com.composeit.backend.scaleservice.models.Quality;
 
 public class ScaleCalculator {
 	private static final List<String> semitones = 
-		List.of("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
+		List.of(Constants.C, Constants.C_SHARP, Constants.D, 
+				Constants.D_SHARP, Constants.E, Constants.F, 
+				Constants.F_SHARP, Constants.G, Constants.G_SHARP, 
+				Constants.A, Constants.A_SHARP, Constants.B);
 	private static final int[] majorSteps = {2, 2, 1, 2, 2, 2};
 	private static final int[] minorSteps = {2, 1, 2, 2, 1, 2};
 	
@@ -21,27 +29,32 @@ public class ScaleCalculator {
 		return semitonesFromScale(indexOpt.getAsInt(), getPattern(quality));
 	}
 	
+	public List<String> getScale(List<String> inputSemitones) {
+		return semitones.stream()
+				.flatMap(semitone -> Arrays.stream(Quality.values())
+						.map(quality -> Map.entry(semitone, quality)))
+				.filter(entry -> {
+					List<String> scaleSemitones = getSemitones(entry.getKey(), entry.getValue());
+					return scaleSemitones.containsAll(inputSemitones);
+				})
+				.map(entry -> entry.getKey() + " " + entry.getValue().name())
+				.collect(Collectors.toList());
+
+	}
+	
 	
 	private List<String> semitonesFromScale(int index, int[] steps) {
-		int smtCounter = index;
-		int stepCounter = 0;
-		List<String> scales = new ArrayList<String>();
-		scales.add(semitones.get(index));
-		for (int i = 0; i < steps.length; i++) {			
-			int step = steps[stepCounter];
-			
-			if (smtCounter + step > semitones.size() - 1) {
-				int diff = (smtCounter + step) - (semitones.size());
-				smtCounter = diff;
-			} else {
-				smtCounter += step;
-			}
-			
-			scales.add(semitones.get(smtCounter));
-			stepCounter++;
-		}
-		
-		return scales;
+		AtomicInteger atomicIndex = new AtomicInteger(index);
+
+		return IntStream.range(0, steps.length + 1)
+				.mapToObj(i -> {
+					if (i == 0) { return semitones.get(atomicIndex.get()); }
+					int step = steps[i - 1];
+					int newIndex = (atomicIndex.get() + step) % semitones.size();
+					atomicIndex.set(newIndex);
+					return semitones.get(newIndex);
+					})
+				.collect(Collectors.toList());
 	}
 	
 	private int[] getPattern(Quality quality) {
