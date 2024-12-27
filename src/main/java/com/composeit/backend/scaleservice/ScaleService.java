@@ -13,4 +13,8 @@ public class ScaleService {
     public List<String> getSemitones(String semitone, Quality quality) {
         return scalecalculator.getSemitones(semitone, quality);
     }
+    
+    public List<String> getScales(List<String> semitones) {
+    	return scalecalculator.getScale(semitones);
+    }
 }
