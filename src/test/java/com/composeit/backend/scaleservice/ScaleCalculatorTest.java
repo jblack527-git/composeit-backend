@@ -27,9 +27,12 @@ public class ScaleCalculatorTest {
 	
 	private static Stream<Arguments> provideSemitoneArgs() {
 		return Stream.of(
-				Arguments.of("F", Quality.MAJOR, List.of("F", "G", "A", "A#", "C", "D", "E")),
-				Arguments.of("G#", Quality.MINOR, List.of("G#", "A#", "B", "C#", "D#", "E", "F#")),
-				Arguments.of("A#", Quality.MAJOR, List.of("A#", "C", "D", "D#", "F", "G", "A"))
+				Arguments.of(Constants.F, Quality.MAJOR, List.of(Constants.F, Constants.G, Constants.A, 
+						Constants.A_SHARP, Constants.C, Constants.D, Constants.E)),
+				Arguments.of(Constants.G_SHARP, Quality.MINOR, List.of(Constants.G_SHARP, Constants.A_SHARP, 
+						Constants.B, Constants.C_SHARP, Constants.D_SHARP, Constants.E, Constants.F_SHARP)),
+				Arguments.of(Constants.A_SHARP, Quality.MAJOR, List.of(Constants.A_SHARP, Constants.C, 
+						Constants.D, Constants.D_SHARP, Constants.F, Constants.G, Constants.A))
 				);
 	}
 	
@@ -38,20 +41,23 @@ public class ScaleCalculatorTest {
 	public void shouldGetCorrectScales(List<String> semitones, List<String> expected) {
 		List<String> actual = classUnderTest.getScale(semitones);
 		
-		assertThat(actual).containsAll(actual);
+		assertThat(actual).containsAll(expected);
 	}
 	
 	private static Stream<Arguments> provideScaleArgs() {
 		return Stream.of(
-				Arguments.of(List.of("F", "G", "A", "A#", "C", "D", "E"), 
+				Arguments.of(List.of(Constants.F, Constants.G, Constants.A, Constants.A_SHARP, 
+						Constants.C, Constants.D, Constants.E), 
 						List.of(Constants.F + " " + Quality.MAJOR.name(),
 								Constants.D + " " + Quality.MINOR.name())),
-				Arguments.of(List.of("G#", "A#", "B", "C#", "D#", "E", "F#"), 
-						List.of(Constants.G_SHARP, Quality.MINOR.name(),
-								Constants.F, Quality.MINOR.name())),
-				Arguments.of(List.of("A#", "C", "D", "D#", "F", "G", "A"), 
-						List.of(Constants.A_SHARP, Quality.MAJOR.name(),
-								Constants.G, Quality.MINOR.name()))
+				Arguments.of(List.of(Constants.G_SHARP, Constants.A_SHARP, Constants.B, Constants.C_SHARP, 
+						Constants.D_SHARP, Constants.E, Constants.F_SHARP), 
+						List.of(Constants.G_SHARP + " " + Quality.MINOR.name(),
+								Constants.B + " " + Quality.MAJOR.name())),
+				Arguments.of(List.of(Constants.A_SHARP, Constants.C, Constants.D, Constants.D_SHARP, 
+						Constants.F, Constants.G, Constants.A), 
+						List.of(Constants.A_SHARP + " " + Quality.MAJOR.name(),
+								Constants.G + " " + Quality.MINOR.name()))
 				);
 	}
 }
