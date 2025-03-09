@@ -1,7 +1,7 @@
 package com.composeit.backend.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +26,7 @@ public class ScaleController {
         this.scaleService = scaleService;
     }
 
-    @GetMapping("/semitones")
+    @PostMapping("/semitones")
     public ResponseEntity<SemitonesResponse> getSemitones(@Valid @RequestBody SemitonesRequest request) {
     	try {
             List<String> semitones = scaleService.getSemitones(request.getTonic(), request.getQuality());
@@ -36,7 +36,7 @@ public class ScaleController {
         }
     }
     
-    @GetMapping("/scales")
+    @PostMapping("/scales")
     public ResponseEntity<ScalesResponse> getScales(@Valid @RequestBody ScalesRequest request) {
     	try {
             List<String> scales = scaleService.getScales(request.getSemitones());

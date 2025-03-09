@@ -2,7 +2,7 @@ package com.composeit.backend.controller;
 
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,7 +48,7 @@ public class ScaleControllerTest {
 		String jsonPayload = objectMapper.writeValueAsString(request);
 
 		
-		mockMvc.perform(get("/api/scales/semitones")
+		mockMvc.perform(post("/api/scales/semitones")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonPayload))
                 .andExpect(status().isOk())
@@ -65,7 +65,7 @@ public class ScaleControllerTest {
                 """;
 
         // Perform the POST request
-        mockMvc.perform(get("/api/scales/semitones")
+        mockMvc.perform(post("/api/scales/semitones")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidJson))
                 .andExpect(status().isBadRequest()); // Verify HTTP 400
@@ -84,7 +84,7 @@ public class ScaleControllerTest {
 		String jsonPayload = objectMapper.writeValueAsString(request);
 
 		
-		mockMvc.perform(get("/api/scales/scales")
+		mockMvc.perform(post("/api/scales/scales")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonPayload))
                 .andExpect(status().isOk())
@@ -101,7 +101,7 @@ public class ScaleControllerTest {
                 """;
 
         // Perform the POST request
-        mockMvc.perform(get("/api/scales/scales")
+        mockMvc.perform(post("/api/scales/scales")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidJson))
                 .andExpect(status().isBadRequest()); // Verify HTTP 400
