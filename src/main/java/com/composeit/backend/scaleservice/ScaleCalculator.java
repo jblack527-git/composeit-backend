@@ -8,13 +8,17 @@ import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.HashMap;
 
 import static com.composeit.backend.common.Constants.SEMITONES;
 import static com.composeit.backend.common.Constants.MAJOR_STEPS;
 import static com.composeit.backend.common.Constants.MINOR_STEPS;
 import static com.composeit.backend.common.Constants.MAJOR_CHORD_PATTERN;
 import static com.composeit.backend.common.Constants.MINOR_CHORD_PATTERN;
+import static com.composeit.backend.common.Constants.MAJOR_POSITIONS;
+import static com.composeit.backend.common.Constants.MINOR_POSITIONS;
 import com.composeit.backend.scaleservice.models.Quality;
+import com.composeit.backend.scaleservice.models.ScaleProfile;
 
 public class ScaleCalculator {
 	public List<String> getSemitonesFromScale(String tonic, Quality quality) {
@@ -111,5 +115,18 @@ public class ScaleCalculator {
 			quality = Quality.MAJOR;
 		}
 		return Map.entry(root, quality);
+	}
+
+	public ScaleProfile getScaleProfile(String tonic, Quality quality) {
+		List<String> semitones = getSemitonesFromScale(tonic, quality);
+		List<String> chords = getChordsFromScale(tonic, quality);
+		Map<String, String> chordsMap = new HashMap<>();
+		List<String> positions = quality == Quality.MAJOR ? MAJOR_POSITIONS : MINOR_POSITIONS;
+		
+		for (int i = 0; i < chords.size(); i++) {
+			chordsMap.put(positions.get(i), chords.get(i));
+		}
+		
+		return new ScaleProfile(tonic, quality, semitones, chordsMap);
 	}
 }
