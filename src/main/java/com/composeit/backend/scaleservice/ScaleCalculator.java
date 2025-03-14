@@ -10,18 +10,40 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.composeit.backend.common.Constants.SEMITONES;
+import static com.composeit.backend.common.Constants.MAJOR_STEPS;
+import static com.composeit.backend.common.Constants.MINOR_STEPS;
+import static com.composeit.backend.common.Constants.MAJOR_CHORD_PATTERN;
+import static com.composeit.backend.common.Constants.MINOR_CHORD_PATTERN;
 import com.composeit.backend.scaleservice.models.Quality;
 
 public class ScaleCalculator {
-	private static final int[] majorSteps = {2, 2, 1, 2, 2, 2};
-	private static final int[] minorSteps = {2, 1, 2, 2, 1, 2};
-	
-	
 	public List<String> getSemitonesFromScale(String tonic, Quality quality) {
 		OptionalInt indexOpt = IntStream.range(0, SEMITONES.size())
 				.filter(i -> tonic.equals(SEMITONES.get(i))).findFirst();
 		
 		return semitonesFromScale(indexOpt.getAsInt(), getPattern(quality));
+	}
+
+	private int[] getPattern(Quality quality) {
+		if (quality == Quality.MAJOR) {
+			return MAJOR_STEPS;
+		} else {
+			return MINOR_STEPS;
+		}
+	}
+
+	private List<String> semitonesFromScale(int index, int[] steps) {
+		AtomicInteger atomicIndex = new AtomicInteger(index);
+
+		return IntStream.range(0, steps.length + 1)
+				.mapToObj(i -> {
+					if (i == 0) { return SEMITONES.get(atomicIndex.get()); }
+					int step = steps[i - 1];
+					int newIndex = (atomicIndex.get() + step) % SEMITONES.size();
+					atomicIndex.set(newIndex);
+					return SEMITONES.get(newIndex);
+					})
+				.collect(Collectors.toList());
 	}
 	
 	public List<String> getScaleFromSemitones(List<String> inputSemitones) {
@@ -38,35 +60,52 @@ public class ScaleCalculator {
 	}
 
 	public List<String> getChordsFromScale(String tonic, Quality quality) {
-		return null;
+		List<String> scale = getSemitonesFromScale(tonic, quality);
+		Quality[] chordPattern = (quality == Quality.MAJOR) ? MAJOR_CHORD_PATTERN : MINOR_CHORD_PATTERN;
+		
+		List<String> chords = new ArrayList<>();
+		for (int i = 0; i < scale.size(); i++) {
+			String note = scale.get(i);
+			Quality chordQuality = chordPattern[i];
+			String chord = note + (chordQuality == Quality.MAJOR ? "" : 
+								 chordQuality == Quality.MINOR ? "m" : "°");
+			chords.add(chord);
+		}
+		return chords;
 	}
 	
 	public List<String> getScaleFromChords(List<String> inputChords) {
-		return null;
+		// Parse input chords to get root notes and qualities
+		List<Map.Entry<String, Quality>> parsedChords = inputChords.stream()
+			.map(this::parseChord)
+			.collect(Collectors.toList());
 
+		// Try each possible tonic and quality
+		return SEMITONES.stream()
+			.flatMap(tonic -> Arrays.stream(Quality.values())
+				.filter(quality -> quality != Quality.DIMINISHED) // Only major and minor scales
+				.map(quality -> Map.entry(tonic, quality)))
+			.filter(entry -> {
+				List<String> scaleChords = getChordsFromScale(entry.getKey(), entry.getValue());
+				return parsedChords.stream()
+					.allMatch(chord -> scaleChords.contains(chord.getKey() + 
+						(chord.getValue() == Quality.MAJOR ? "" : 
+						 chord.getValue() == Quality.MINOR ? "m" : "°")));
+			})
+			.map(entry -> entry.getKey() + " " + entry.getValue().name())
+			.collect(Collectors.toList());
 	}
 	
-	
-	private List<String> semitonesFromScale(int index, int[] steps) {
-		AtomicInteger atomicIndex = new AtomicInteger(index);
-
-		return IntStream.range(0, steps.length + 1)
-				.mapToObj(i -> {
-					if (i == 0) { return SEMITONES.get(atomicIndex.get()); }
-					int step = steps[i - 1];
-					int newIndex = (atomicIndex.get() + step) % SEMITONES.size();
-					atomicIndex.set(newIndex);
-					return SEMITONES.get(newIndex);
-					})
-				.collect(Collectors.toList());
-	}
-	
-	private int[] getPattern(Quality quality) {
-		if (quality == Quality.MAJOR) {
-			return majorSteps;
+	private Map.Entry<String, Quality> parseChord(String chord) {
+		String root = chord.replaceAll("[m°]$", "");
+		Quality quality;
+		if (chord.endsWith("°")) {
+			quality = Quality.DIMINISHED;
+		} else if (chord.endsWith("m")) {
+			quality = Quality.MINOR;
 		} else {
-			return minorSteps;
+			quality = Quality.MAJOR;
 		}
+		return Map.entry(root, quality);
 	}
-
 }

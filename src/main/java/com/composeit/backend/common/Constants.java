@@ -2,6 +2,7 @@ package com.composeit.backend.common;
 
 import java.util.Arrays;
 import java.util.List;
+import com.composeit.backend.scaleservice.models.Quality;
 
 public class Constants {
 	public static String C = "C";
@@ -21,4 +22,23 @@ public class Constants {
 		C, C_SHARP, D, D_SHARP, E, F,
 		F_SHARP, G, G_SHARP, A, A_SHARP, B
 	);
+
+
+	// Steps between notes in given scale
+	public static final int[] MAJOR_STEPS = {2, 2, 1, 2, 2, 2};
+	public static final int[] MINOR_STEPS = {2, 1, 2, 2, 1, 2};
+
+	// Chord patterns for major scale (I, ii, iii, IV, V, vi, vii°)
+	public static final Quality[] MAJOR_CHORD_PATTERN = {
+		Quality.MAJOR, Quality.MINOR, Quality.MINOR,
+		Quality.MAJOR, Quality.MAJOR, Quality.MINOR,
+		Quality.DIMINISHED
+	};
+	
+	// Chord patterns for minor scale (i, ii°, III, iv, v, VI, VII)
+	public static final Quality[] MINOR_CHORD_PATTERN = {
+		Quality.MINOR, Quality.DIMINISHED, Quality.MAJOR,
+		Quality.MINOR, Quality.MINOR, Quality.MAJOR,
+		Quality.MAJOR
+	};
 }
