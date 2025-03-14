@@ -20,7 +20,7 @@ public class ScaleCalculatorTest {
 	@ParameterizedTest
 	@MethodSource("provideSemitoneArgs")
 	public void shouldGetCorrectSemitones(String tonic, Quality quality, List<String> expected) {
-		List<String> actual = classUnderTest.getSemitones(tonic, quality);
+		List<String> actual = classUnderTest.getSemitonesFromScale(tonic, quality);
 		
 		assertThat(actual).isEqualTo(expected);
 	}
@@ -39,7 +39,7 @@ public class ScaleCalculatorTest {
 	@ParameterizedTest
 	@MethodSource("provideScaleArgs")
 	public void shouldGetCorrectScales(List<String> semitones, List<String> expected) {
-		List<String> actual = classUnderTest.getScale(semitones);
+		List<String> actual = classUnderTest.getScaleFromSemitones(semitones);
 		
 		assertThat(actual).containsAll(expected);
 	}

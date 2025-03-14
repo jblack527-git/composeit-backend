@@ -11,10 +11,10 @@ public class ScaleService {
 	ScaleCalculator scalecalculator = new ScaleCalculator();
 
     public List<String> getSemitones(String semitone, Quality quality) {
-        return scalecalculator.getSemitones(semitone, quality);
+        return scalecalculator.getSemitonesFromScale(semitone, quality);
     }
     
     public List<String> getScales(List<String> semitones) {
-    	return scalecalculator.getScale(semitones);
+    	return scalecalculator.getScaleFromSemitones(semitones);
     }
 }

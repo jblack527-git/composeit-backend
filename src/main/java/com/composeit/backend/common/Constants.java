@@ -1,5 +1,8 @@
 package com.composeit.backend.common;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Constants {
 	public static String C = "C";
 	public static String C_SHARP = "C#/Db";
@@ -13,4 +16,9 @@ public class Constants {
 	public static String A = "A";
 	public static String A_SHARP = "A#/Bb";
 	public static String B = "B";
+	
+	public static final List<String> SEMITONES = Arrays.asList(
+		C, C_SHARP, D, D_SHARP, E, F,
+		F_SHARP, G, G_SHARP, A, A_SHARP, B
+	);
 }
