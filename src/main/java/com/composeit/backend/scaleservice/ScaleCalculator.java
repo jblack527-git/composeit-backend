@@ -10,13 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.HashMap;
 
-import static com.composeit.backend.common.Constants.SEMITONES;
-import static com.composeit.backend.common.Constants.MAJOR_STEPS;
-import static com.composeit.backend.common.Constants.MINOR_STEPS;
-import static com.composeit.backend.common.Constants.MAJOR_CHORD_PATTERN;
-import static com.composeit.backend.common.Constants.MINOR_CHORD_PATTERN;
-import static com.composeit.backend.common.Constants.MAJOR_POSITIONS;
-import static com.composeit.backend.common.Constants.MINOR_POSITIONS;
+import static com.composeit.backend.common.Constants.*;
 import com.composeit.backend.scaleservice.models.Quality;
 import com.composeit.backend.scaleservice.models.ScaleProfile;
 
@@ -120,13 +114,78 @@ public class ScaleCalculator {
 	public ScaleProfile getScaleProfile(String tonic, Quality quality) {
 		List<String> semitones = getSemitonesFromScale(tonic, quality);
 		List<String> chords = getChordsFromScale(tonic, quality);
+		
+		return new ScaleProfile(
+				tonic,
+				quality,
+				semitones,
+				createChordsMap(chords, quality),
+				createScaleDegrees(semitones),
+				createIntervals(semitones, quality),
+				findRelativeScale(semitones, quality),
+				findParallelScale(tonic, quality),
+				createCommonProgressions(quality),
+				determineMode(quality)
+		);
+	}
+
+	private Map<String, String> createChordsMap(List<String> chords, Quality quality) {
 		Map<String, String> chordsMap = new HashMap<>();
 		List<String> positions = quality == Quality.MAJOR ? MAJOR_POSITIONS : MINOR_POSITIONS;
 		
 		for (int i = 0; i < chords.size(); i++) {
 			chordsMap.put(positions.get(i), chords.get(i));
 		}
+		return chordsMap;
+	}
+	
+	private Map<Integer, String> createScaleDegrees(List<String> semitones) {
+		Map<Integer, String> scaleDegrees = new HashMap<>();
+		for (int i = 0; i < semitones.size(); i++) {
+			scaleDegrees.put(i + 1, semitones.get(i));
+		}
+		return scaleDegrees;
+	}
+	
+	private Map<String, String> createIntervals(List<String> semitones, Quality quality) {
+		Map<String, String> intervals = new HashMap<>();
+		String[] intervalNames = quality == Quality.MAJOR ?
+				new String[]{"Unison", "Major Second", "Major Third", 
+						"Perfect Fourth", "Perfect Fifth", "Major Sixth", "Major Seventh"} :
+				new String[]{"Unison", "Major Second", "Minor Third", 
+						"Perfect Fourth", "Perfect Fifth", "Minor Sixth", "Minor Seventh"};
 		
-		return new ScaleProfile(tonic, quality, semitones, chordsMap);
+		for (int i = 0; i < semitones.size(); i++) {
+			intervals.put(intervalNames[i], semitones.get(i));
+		}
+		return intervals;
+	}
+	
+	private String findRelativeScale(List<String> semitones, Quality quality) {
+		return quality == Quality.MAJOR ? 
+				semitones.get(5) + " MINOR" :  // Relative minor is 6th degree of major
+				semitones.get(2) + " MAJOR";   // Relative major is 3rd degree of minor
+	}
+	
+	private String findParallelScale(String tonic, Quality quality) {
+		return tonic + " " + (quality == Quality.MAJOR ? "MINOR" : "MAJOR");
+	}
+	
+	private List<List<String>> createCommonProgressions(Quality quality) {
+		List<List<String>> commonProgressions = new ArrayList<>();
+		if (quality == Quality.MAJOR) {
+			commonProgressions.add(Arrays.asList(MAJOR_I, MAJOR_IV, MAJOR_V));  // I-IV-V
+			commonProgressions.add(Arrays.asList(MAJOR_I, MAJOR_V, MAJOR_VI, MAJOR_IV));  // I-V-vi-IV
+			commonProgressions.add(Arrays.asList(MAJOR_II, MAJOR_V, MAJOR_I));  // ii-V-I
+		} else {
+			commonProgressions.add(Arrays.asList(MINOR_I, MINOR_IV, MINOR_V));  // i-iv-v
+			commonProgressions.add(Arrays.asList(MINOR_I, MINOR_VI, MINOR_VII, MINOR_V));  // i-VI-VII-v
+			commonProgressions.add(Arrays.asList(MINOR_II, MINOR_V, MINOR_I));  // ii°-v-i
+		}
+		return commonProgressions;
+	}
+	
+	private String determineMode(Quality quality) {
+		return quality == Quality.MAJOR ? "Ionian" : "Aeolian";
 	}
 }

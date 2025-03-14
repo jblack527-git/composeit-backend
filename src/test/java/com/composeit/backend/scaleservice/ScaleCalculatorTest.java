@@ -151,13 +151,22 @@ class ScaleCalculatorTest {
 	@ParameterizedTest(name = "shouldGetCorrectScaleProfile - {0} {1}")
 	@MethodSource("provideScaleProfileArgs")
 	void shouldGetCorrectScaleProfile(String tonic, Quality quality, List<String> expectedSemitones, 
-			Map<String, String> expectedChords) {
+			Map<String, String> expectedChords, Map<Integer, String> expectedDegrees,
+			Map<String, String> expectedIntervals, String expectedRelative,
+			String expectedParallel, List<List<String>> expectedProgressions,
+			String expectedMode) {
 		ScaleProfile profile = calculator.getScaleProfile(tonic, quality);
 		
 		assertThat(profile.getTonic()).isEqualTo(tonic);
 		assertThat(profile.getQuality()).isEqualTo(quality);
 		assertThat(profile.getSemitones()).isEqualTo(expectedSemitones);
 		assertThat(profile.getChords()).isEqualTo(expectedChords);
+		assertThat(profile.getScaleDegrees()).isEqualTo(expectedDegrees);
+		assertThat(profile.getIntervals()).isEqualTo(expectedIntervals);
+		assertThat(profile.getRelativeScale()).isEqualTo(expectedRelative);
+		assertThat(profile.getParallelScale()).isEqualTo(expectedParallel);
+		assertThat(profile.getCommonProgressions()).isEqualTo(expectedProgressions);
+		assertThat(profile.getMode()).isEqualTo(expectedMode);
 	}
 	
 	private static Stream<Arguments> provideScaleProfileArgs() {
@@ -173,7 +182,33 @@ class ScaleCalculatorTest {
 					Constants.MAJOR_V, "G",
 					Constants.MAJOR_VI, "Am",
 					Constants.MAJOR_VII, "B°"
-				)
+				),
+				Map.of(
+					1, Constants.C,
+					2, Constants.D,
+					3, Constants.E,
+					4, Constants.F,
+					5, Constants.G,
+					6, Constants.A,
+					7, Constants.B
+				),
+				Map.of(
+					"Unison", Constants.C,
+					"Major Second", Constants.D,
+					"Major Third", Constants.E,
+					"Perfect Fourth", Constants.F,
+					"Perfect Fifth", Constants.G,
+					"Major Sixth", Constants.A,
+					"Major Seventh", Constants.B
+				),
+				"A MINOR",
+				"C MINOR",
+				List.of(
+					List.of(Constants.MAJOR_I, Constants.MAJOR_IV, Constants.MAJOR_V),
+					List.of(Constants.MAJOR_I, Constants.MAJOR_V, Constants.MAJOR_VI, Constants.MAJOR_IV),
+					List.of(Constants.MAJOR_II, Constants.MAJOR_V, Constants.MAJOR_I)
+				),
+				"Ionian"
 			),
 			Arguments.of(
 				Constants.A, Quality.MINOR,
@@ -186,33 +221,33 @@ class ScaleCalculatorTest {
 					Constants.MINOR_V, "Em",
 					Constants.MINOR_VI, "F",
 					Constants.MINOR_VII, "G"
-				)
-			),
-			Arguments.of(
-				Constants.F, Quality.MAJOR,
-				List.of(Constants.F, Constants.G, Constants.A, Constants.A_SHARP, Constants.C, Constants.D, Constants.E),
+				),
 				Map.of(
-					Constants.MAJOR_I, "F",
-					Constants.MAJOR_II, "Gm",
-					Constants.MAJOR_III, "Am",
-					Constants.MAJOR_IV, "A#/Bb",
-					Constants.MAJOR_V, "C",
-					Constants.MAJOR_VI, "Dm",
-					Constants.MAJOR_VII, "E°"
-				)
-			),
-			Arguments.of(
-				Constants.G_SHARP, Quality.MINOR,
-				List.of(Constants.G_SHARP, Constants.A_SHARP, Constants.B, Constants.C_SHARP, Constants.D_SHARP, Constants.E, Constants.F_SHARP),
+					1, Constants.A,
+					2, Constants.B,
+					3, Constants.C,
+					4, Constants.D,
+					5, Constants.E,
+					6, Constants.F,
+					7, Constants.G
+				),
 				Map.of(
-					Constants.MINOR_I, "G#/Abm",
-					Constants.MINOR_II, "A#/Bb°",
-					Constants.MINOR_III, "B",
-					Constants.MINOR_IV, "C#/Dbm",
-					Constants.MINOR_V, "D#/Ebm",
-					Constants.MINOR_VI, "E",
-					Constants.MINOR_VII, "F#/Gb"
-				)
+					"Unison", Constants.A,
+					"Major Second", Constants.B,
+					"Minor Third", Constants.C,
+					"Perfect Fourth", Constants.D,
+					"Perfect Fifth", Constants.E,
+					"Minor Sixth", Constants.F,
+					"Minor Seventh", Constants.G
+				),
+				"C MAJOR",
+				"A MAJOR",
+				List.of(
+					List.of(Constants.MINOR_I, Constants.MINOR_IV, Constants.MINOR_V),
+					List.of(Constants.MINOR_I, Constants.MINOR_VI, Constants.MINOR_VII, Constants.MINOR_V),
+					List.of(Constants.MINOR_II, Constants.MINOR_V, Constants.MINOR_I)
+				),
+				"Aeolian"
 			)
 		);
 	}
