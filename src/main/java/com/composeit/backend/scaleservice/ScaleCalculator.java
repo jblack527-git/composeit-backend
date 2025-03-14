@@ -18,6 +18,7 @@ import com.composeit.backend.scaleservice.models.Quality;
 
 public class ScaleCalculator {
 	public List<String> getSemitonesFromScale(String tonic, Quality quality) {
+		// find the index of the tonic in the semitones list
 		OptionalInt indexOpt = IntStream.range(0, SEMITONES.size())
 				.filter(i -> tonic.equals(SEMITONES.get(i))).findFirst();
 		
@@ -35,6 +36,7 @@ public class ScaleCalculator {
 	private List<String> semitonesFromScale(int index, int[] steps) {
 		AtomicInteger atomicIndex = new AtomicInteger(index);
 
+		// iterate over the scale and create a list of semitones based on the steps
 		return IntStream.range(0, steps.length + 1)
 				.mapToObj(i -> {
 					if (i == 0) { return SEMITONES.get(atomicIndex.get()); }
@@ -47,6 +49,7 @@ public class ScaleCalculator {
 	}
 	
 	public List<String> getScaleFromSemitones(List<String> inputSemitones) {
+		// iterate over the semitones and create a list of scales based on the semitones
 		return SEMITONES.stream()
 				.flatMap(tonic -> Arrays.stream(Quality.values())
 						.map(quality -> Map.entry(tonic, quality)))
@@ -63,6 +66,7 @@ public class ScaleCalculator {
 		List<String> scale = getSemitonesFromScale(tonic, quality);
 		Quality[] chordPattern = (quality == Quality.MAJOR) ? MAJOR_CHORD_PATTERN : MINOR_CHORD_PATTERN;
 		
+		// iterate over the scale and create a chord for each note based on the chord pattern
 		List<String> chords = new ArrayList<>();
 		for (int i = 0; i < scale.size(); i++) {
 			String note = scale.get(i);
