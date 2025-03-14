@@ -1,84 +1,7 @@
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
-    id 'io.spring.dependency-management' version '1.1.4'
-    id 'com.github.node-gradle.node' version '7.0.1'
-}
-
-node {
-    download = false
-    nodeProjectDir = file("${projectDir.parent}/frontend")
-}
-
-task installFrontend(type: NpmTask) {
-    workingDir = file("${projectDir.parent}/frontend")
-    args = ['install']
-    inputs.file("${projectDir.parent}/frontend/package.json")
-    outputs.dir("${projectDir.parent}/frontend/node_modules")
-}
-
-task buildFrontend(type: NpmTask) {
-    workingDir = file("${projectDir.parent}/frontend")
-    args = ['run', 'build']
-    dependsOn installFrontend
-    
-    inputs.files(fileTree("${projectDir.parent}/frontend/src"))
-    inputs.files(fileTree("${projectDir.parent}/frontend/public"))
-    inputs.file("${projectDir.parent}/frontend/package.json")
-    outputs.dir("${projectDir.parent}/frontend/build")
-}
-
-task cleanFrontendDist(type: Delete) {
-    delete "${projectDir.parent}/frontend/dist"
-}
-
-task copyJarToElectron(type: Copy) {
-    from "${buildDir}/libs/backend-0.0.1-SNAPSHOT.jar"
-    into "${projectDir.parent}/frontend/build/static"
-    dependsOn bootJar
-    
-    doLast {
-        println "Copied JAR to: ${projectDir.parent}/frontend/build/static"
-        def jarFile = new File("${projectDir.parent}/frontend/build/static/backend-0.0.1-SNAPSHOT.jar")
-        println "JAR exists at destination: ${jarFile.exists()}"
-        println "JAR size: ${jarFile.length()} bytes"
-    }
-}
-
-task buildElectron(type: NpmTask) {
-    workingDir = file("${projectDir.parent}/frontend")
-    args = ['run', 'electron-pack']
-    dependsOn buildFrontend, cleanFrontendDist, copyJarToElectron
-    
-    doFirst {
-        println "Checking JAR before Electron build:"
-        def jarFile = new File("${projectDir.parent}/frontend/build/static/backend-0.0.1-SNAPSHOT.jar")
-        println "JAR exists: ${jarFile.exists()}"
-        if (jarFile.exists()) {
-            println "JAR size: ${jarFile.length()} bytes"
-        }
-    }
-}
-
-task buildAll {
-    group = 'build'
-    description = 'Builds everything including frontend and Electron'
-    
-    dependsOn clean
-    dependsOn bootJar
-    dependsOn copyJarToElectron
-    dependsOn buildElectron
-    
-    tasks.named('bootJar') {
-        mustRunAfter clean
-        dependsOn copyFrontendBuild
-    }
-    tasks.named('copyJarToElectron') {
-        mustRunAfter bootJar
-    }
-    tasks.named('buildElectron') {
-        mustRunAfter copyJarToElectron
-    }
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.composeit'
@@ -106,4 +29,9 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Optional frontend integration - only applied if frontend property is set
+if (project.hasProperty('includeFrontend')) {
+    apply from: 'frontend.gradle'
 }
