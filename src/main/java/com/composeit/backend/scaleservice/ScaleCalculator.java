@@ -9,83 +9,89 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
 import static com.composeit.backend.common.Constants.*;
 import com.composeit.backend.scaleservice.models.Quality;
 import com.composeit.backend.scaleservice.models.ScaleProfile;
 
 public class ScaleCalculator {
+	private final ScalePatternCalculator patternCalculator;
+	private final ChordCalculator chordCalculator;
+	private final ProgressionCalculator progressionCalculator;
+
+	public ScaleCalculator() {
+		this.patternCalculator = new ScalePatternCalculator();
+		this.chordCalculator = new ChordCalculator(patternCalculator);
+		this.progressionCalculator = new ProgressionCalculator();
+	}
+
 	public List<String> getSemitonesFromScale(String tonic, Quality quality) {
-		// find the index of the tonic in the semitones list
-		OptionalInt indexOpt = IntStream.range(0, SEMITONES.size())
-				.filter(i -> tonic.equals(SEMITONES.get(i))).findFirst();
-		
-		return semitonesFromScale(indexOpt.getAsInt(), getPattern(quality));
+		return patternCalculator.getSemitonesFromScale(tonic, quality);
 	}
 
-	private int[] getPattern(Quality quality) {
-		if (quality == Quality.MAJOR) {
-			return MAJOR_STEPS;
-		} else {
-			return MINOR_STEPS;
-		}
-	}
-
-	private List<String> semitonesFromScale(int index, int[] steps) {
-		AtomicInteger atomicIndex = new AtomicInteger(index);
-
-		// iterate over the scale and create a list of semitones based on the steps
-		return IntStream.range(0, steps.length + 1)
-				.mapToObj(i -> {
-					if (i == 0) { return SEMITONES.get(atomicIndex.get()); }
-					int step = steps[i - 1];
-					int newIndex = (atomicIndex.get() + step) % SEMITONES.size();
-					atomicIndex.set(newIndex);
-					return SEMITONES.get(newIndex);
-					})
-				.collect(Collectors.toList());
-	}
-	
 	public List<String> getScaleFromSemitones(List<String> inputSemitones) {
-		// iterate over the semitones and create a list of scales based on the semitones
-		return SEMITONES.stream()
-				.flatMap(tonic -> Arrays.stream(Quality.values())
-						.map(quality -> Map.entry(tonic, quality)))
-				.filter(entry -> {
-					List<String> scaleSemitones = getSemitonesFromScale(entry.getKey(), entry.getValue());
-					return scaleSemitones.containsAll(inputSemitones);
-				})
-				.map(entry -> entry.getKey() + " " + entry.getValue().name())
-				.collect(Collectors.toList());
+		if (inputSemitones == null || inputSemitones.isEmpty()) {
+			return List.of();
+		}
 
+		// Validate that all input notes are valid
+		if (inputSemitones.stream().anyMatch(note -> note == null || !ALL_NOTES.contains(note))) {
+			return List.of();
+		}
+
+		// Add enharmonic equivalents to the input notes
+		List<String> notesWithEquivalents = new ArrayList<>(inputSemitones);
+		for (String note : inputSemitones) {
+			if (ENHARMONIC_MAP.containsKey(note)) {
+				// Add the alternate version (flat/sharp) of the note
+				notesWithEquivalents.add(ENHARMONIC_MAP.get(note)[1]);
+			}
+		}
+
+		return SEMITONES.stream()
+			.filter(tonic -> !tonic.equals(B_SHARP) && !tonic.equals(E_SHARP)) // Skip theoretical scales
+			.flatMap(tonic -> Arrays.stream(Quality.values())
+				.map(quality -> Map.entry(tonic, quality)))
+			.filter(entry -> {
+				List<String> scaleSemitones = getSemitonesFromScale(entry.getKey(), entry.getValue());
+				// Check if scale contains any version of each input note
+				return inputSemitones.stream().allMatch(inputNote -> 
+					scaleSemitones.stream().anyMatch(scaleNote -> 
+						scaleNote.equals(inputNote) || 
+						(ENHARMONIC_MAP.containsKey(scaleNote) && 
+						 Arrays.asList(ENHARMONIC_MAP.get(scaleNote)).contains(inputNote))
+					)
+				);
+			})
+			.flatMap(entry -> {
+				String scaleName = entry.getKey() + " " + entry.getValue().name();
+				// If tonic has an enharmonic equivalent, add both versions of the scale name
+				if (ENHARMONIC_MAP.containsKey(entry.getKey())) {
+					String alternateTonic = ENHARMONIC_MAP.get(entry.getKey())[1];
+					// but skip theoretical equivalents (C_FLAT and F_FLAT)
+					if (!alternateTonic.equals(C_FLAT) && !alternateTonic.equals(F_FLAT)) {
+						String alternateScaleName = alternateTonic + " " + entry.getValue().name();
+						return Stream.of(scaleName, alternateScaleName);
+					}
+				}
+				return Stream.of(scaleName);
+			})
+			.collect(Collectors.toList());
 	}
 
 	public List<String> getChordsFromScale(String tonic, Quality quality) {
-		List<String> scale = getSemitonesFromScale(tonic, quality);
-		Quality[] chordPattern = (quality == Quality.MAJOR) ? MAJOR_CHORD_PATTERN : MINOR_CHORD_PATTERN;
-		
-		// iterate over the scale and create a chord for each note based on the chord pattern
-		List<String> chords = new ArrayList<>();
-		for (int i = 0; i < scale.size(); i++) {
-			String note = scale.get(i);
-			Quality chordQuality = chordPattern[i];
-			String chord = note + (chordQuality == Quality.MAJOR ? "" : 
-								 chordQuality == Quality.MINOR ? "m" : "°");
-			chords.add(chord);
-		}
-		return chords;
+		return chordCalculator.getChordsFromScale(tonic, quality);
 	}
 	
 	public List<String> getScaleFromChords(List<String> inputChords) {
-		// Parse input chords to get root notes and qualities
 		List<Map.Entry<String, Quality>> parsedChords = inputChords.stream()
-			.map(this::parseChord)
+			.map(chordCalculator::parseChord)
 			.collect(Collectors.toList());
 
-		// Try each possible tonic and quality
 		return SEMITONES.stream()
 			.flatMap(tonic -> Arrays.stream(Quality.values())
-				.filter(quality -> quality != Quality.DIMINISHED) // Only major and minor scales
+				.filter(quality -> quality != Quality.DIMINISHED)
 				.map(quality -> Map.entry(tonic, quality)))
 			.filter(entry -> {
 				List<String> scaleChords = getChordsFromScale(entry.getKey(), entry.getValue());
@@ -97,48 +103,48 @@ public class ScaleCalculator {
 			.map(entry -> entry.getKey() + " " + entry.getValue().name())
 			.collect(Collectors.toList());
 	}
-	
-	private Map.Entry<String, Quality> parseChord(String chord) {
-		String root = chord.replaceAll("[m°]$", "");
-		Quality quality;
-		if (chord.endsWith("°")) {
-			quality = Quality.DIMINISHED;
-		} else if (chord.endsWith("m")) {
-			quality = Quality.MINOR;
-		} else {
-			quality = Quality.MAJOR;
-		}
-		return Map.entry(root, quality);
-	}
 
 	public ScaleProfile getScaleProfile(String tonic, Quality quality) {
-		List<String> semitones = getSemitonesFromScale(tonic, quality);
-		List<String> chords = getChordsFromScale(tonic, quality);
+		if (tonic == null || quality == null) {
+			return null;
+		}
+
+		// Get the normalized tonic for consistent notation
+		String normalizedTonic = patternCalculator.normalizeNote(tonic);
+		if (normalizedTonic == null || !SEMITONES.contains(normalizedTonic)) {
+			return null;
+		}
+		
+		// Get scale components
+		List<String> semitones = getSemitonesFromScale(normalizedTonic, quality);
+		if (semitones.isEmpty()) {
+			return null;
+		}
+
+		List<String> chords = getChordsFromScale(normalizedTonic, quality);
+		Map<String, String> chordsMap = chordCalculator.createChordsMap(chords, quality);
+		Map<Integer, String> scaleDegrees = createScaleDegrees(semitones);
+		Map<String, String> intervals = patternCalculator.createIntervals(semitones, quality);
+		
+		// Get related scales
+		String relativeScale = progressionCalculator.findRelativeScale(semitones, quality);
+		String parallelScale = progressionCalculator.findParallelScale(normalizedTonic, quality);
+		List<List<String>> progressions = progressionCalculator.createCommonProgressions(quality);
 		
 		return new ScaleProfile(
-				tonic,
+				normalizedTonic,
 				quality,
 				semitones,
-				createChordsMap(chords, quality),
-				createScaleDegrees(semitones),
-				createIntervals(semitones, quality),
-				findRelativeScale(semitones, quality),
-				findParallelScale(tonic, quality),
-				createCommonProgressions(quality),
+				chordsMap,
+				scaleDegrees,
+				intervals,
+				relativeScale,
+				parallelScale,
+				progressions,
 				determineMode(quality)
 		);
 	}
 
-	private Map<String, String> createChordsMap(List<String> chords, Quality quality) {
-		Map<String, String> chordsMap = new HashMap<>();
-		List<String> positions = quality == Quality.MAJOR ? MAJOR_POSITIONS : MINOR_POSITIONS;
-		
-		for (int i = 0; i < chords.size(); i++) {
-			chordsMap.put(positions.get(i), chords.get(i));
-		}
-		return chordsMap;
-	}
-	
 	private Map<Integer, String> createScaleDegrees(List<String> semitones) {
 		Map<Integer, String> scaleDegrees = new HashMap<>();
 		for (int i = 0; i < semitones.size(); i++) {
@@ -147,45 +153,30 @@ public class ScaleCalculator {
 		return scaleDegrees;
 	}
 	
-	private Map<String, String> createIntervals(List<String> semitones, Quality quality) {
-		Map<String, String> intervals = new HashMap<>();
-		String[] intervalNames = quality == Quality.MAJOR ?
-				new String[]{"Unison", "Major Second", "Major Third", 
-						"Perfect Fourth", "Perfect Fifth", "Major Sixth", "Major Seventh"} :
-				new String[]{"Unison", "Major Second", "Minor Third", 
-						"Perfect Fourth", "Perfect Fifth", "Minor Sixth", "Minor Seventh"};
-		
-		for (int i = 0; i < semitones.size(); i++) {
-			intervals.put(intervalNames[i], semitones.get(i));
-		}
-		return intervals;
-	}
-	
-	private String findRelativeScale(List<String> semitones, Quality quality) {
-		return quality == Quality.MAJOR ? 
-				semitones.get(5) + " MINOR" :  // Relative minor is 6th degree of major
-				semitones.get(2) + " MAJOR";   // Relative major is 3rd degree of minor
-	}
-	
-	private String findParallelScale(String tonic, Quality quality) {
-		return tonic + " " + (quality == Quality.MAJOR ? "MINOR" : "MAJOR");
-	}
-	
-	private List<List<String>> createCommonProgressions(Quality quality) {
-		List<List<String>> commonProgressions = new ArrayList<>();
-		if (quality == Quality.MAJOR) {
-			commonProgressions.add(Arrays.asList(MAJOR_I, MAJOR_IV, MAJOR_V));  // I-IV-V
-			commonProgressions.add(Arrays.asList(MAJOR_I, MAJOR_V, MAJOR_VI, MAJOR_IV));  // I-V-vi-IV
-			commonProgressions.add(Arrays.asList(MAJOR_II, MAJOR_V, MAJOR_I));  // ii-V-I
-		} else {
-			commonProgressions.add(Arrays.asList(MINOR_I, MINOR_IV, MINOR_V));  // i-iv-v
-			commonProgressions.add(Arrays.asList(MINOR_I, MINOR_VI, MINOR_VII, MINOR_V));  // i-VI-VII-v
-			commonProgressions.add(Arrays.asList(MINOR_II, MINOR_V, MINOR_I));  // ii°-v-i
-		}
-		return commonProgressions;
-	}
-	
 	private String determineMode(Quality quality) {
-		return quality == Quality.MAJOR ? "Ionian" : "Aeolian";
+		switch (quality) {
+			case MAJOR:
+				return "Ionian";
+			case MINOR:
+				return "Aeolian";
+			case DORIAN:
+				return "Dorian";
+			case PHRYGIAN:
+				return "Phrygian";
+			case LYDIAN:
+				return "Lydian";
+			case MIXOLYDIAN:
+				return "Mixolydian";
+			case PENTATONIC_MAJOR:
+				return "Major Pentatonic";
+			case PENTATONIC_MINOR:
+				return "Minor Pentatonic";
+			case HARMONIC_MINOR:
+				return "Harmonic Minor";
+			case MELODIC_MINOR:
+				return "Melodic Minor";
+			default:
+				return quality.name();
+		}
 	}
 }
