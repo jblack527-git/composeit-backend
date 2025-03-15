@@ -1,17 +1,49 @@
 package com.composeit.backend.scaleservice;
 
-import static com.composeit.backend.common.Constants.*;
-import com.composeit.backend.scaleservice.models.Quality;
+import static com.composeit.backend.common.Constants.A_FLAT;
+import static com.composeit.backend.common.Constants.A_SHARP;
+import static com.composeit.backend.common.Constants.B;
+import static com.composeit.backend.common.Constants.B_FLAT;
+import static com.composeit.backend.common.Constants.B_SHARP;
+import static com.composeit.backend.common.Constants.C;
+import static com.composeit.backend.common.Constants.C_FLAT;
+import static com.composeit.backend.common.Constants.C_SHARP;
+import static com.composeit.backend.common.Constants.DIMINISHED_STEPS;
+import static com.composeit.backend.common.Constants.DORIAN_STEPS;
+import static com.composeit.backend.common.Constants.D_FLAT;
+import static com.composeit.backend.common.Constants.D_SHARP;
+import static com.composeit.backend.common.Constants.E;
+import static com.composeit.backend.common.Constants.E_FLAT;
+import static com.composeit.backend.common.Constants.E_SHARP;
+import static com.composeit.backend.common.Constants.F;
+import static com.composeit.backend.common.Constants.FLAT_SCALES;
+import static com.composeit.backend.common.Constants.F_FLAT;
+import static com.composeit.backend.common.Constants.F_SHARP;
+import static com.composeit.backend.common.Constants.G_FLAT;
+import static com.composeit.backend.common.Constants.G_SHARP;
+import static com.composeit.backend.common.Constants.HARMONIC_MINOR_STEPS;
+import static com.composeit.backend.common.Constants.LOCRIAN_STEPS;
+import static com.composeit.backend.common.Constants.LYDIAN_STEPS;
+import static com.composeit.backend.common.Constants.MAJOR_STEPS;
+import static com.composeit.backend.common.Constants.MELODIC_MINOR_STEPS;
+import static com.composeit.backend.common.Constants.MINOR_STEPS;
+import static com.composeit.backend.common.Constants.MIXOLYDIAN_STEPS;
+import static com.composeit.backend.common.Constants.PENTATONIC_MAJOR_STEPS;
+import static com.composeit.backend.common.Constants.PENTATONIC_MINOR_STEPS;
+import static com.composeit.backend.common.Constants.PHRYGIAN_STEPS;
+import static com.composeit.backend.common.Constants.SEMITONES;
+import static com.composeit.backend.common.Constants.SHARP_SCALES;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.Set;
-import java.util.ArrayList;
+
+import com.composeit.backend.scaleservice.models.Quality;
 
 public class ScalePatternCalculator {
     /**

@@ -1,17 +1,21 @@
 package com.composeit.backend.scaleservice;
 
+import static com.composeit.backend.common.Constants.ALL_NOTES;
+import static com.composeit.backend.common.Constants.B_SHARP;
+import static com.composeit.backend.common.Constants.C_FLAT;
+import static com.composeit.backend.common.Constants.ENHARMONIC_MAP;
+import static com.composeit.backend.common.Constants.E_SHARP;
+import static com.composeit.backend.common.Constants.F_FLAT;
+import static com.composeit.backend.common.Constants.SEMITONES;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.HashMap;
 import java.util.stream.Stream;
 
-import static com.composeit.backend.common.Constants.*;
 import com.composeit.backend.scaleservice.models.Quality;
 import com.composeit.backend.scaleservice.models.ScaleProfile;
 

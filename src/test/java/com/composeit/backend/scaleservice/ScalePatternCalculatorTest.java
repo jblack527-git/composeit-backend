@@ -1,17 +1,29 @@
 package com.composeit.backend.scaleservice;
 
+import static com.composeit.backend.common.Constants.A;
+import static com.composeit.backend.common.Constants.B;
+import static com.composeit.backend.common.Constants.B_FLAT;
+import static com.composeit.backend.common.Constants.C;
+import static com.composeit.backend.common.Constants.C_SHARP;
+import static com.composeit.backend.common.Constants.D;
+import static com.composeit.backend.common.Constants.E;
+import static com.composeit.backend.common.Constants.E_FLAT;
+import static com.composeit.backend.common.Constants.F;
+import static com.composeit.backend.common.Constants.F_SHARP;
+import static com.composeit.backend.common.Constants.G;
+import static com.composeit.backend.common.Constants.G_SHARP;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
 
-import static com.composeit.backend.common.Constants.*;
 import com.composeit.backend.scaleservice.models.Quality;
 
 class ScalePatternCalculatorTest {

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class ProgressionCalculator {
     public List<List<String>> createCommonProgressions(Quality quality) {
@@ -135,59 +134,5 @@ public class ProgressionCalculator {
             default:
                 return null;
         }
-    }
-
-    private String normalizeNote(String note) {
-        if (note == null) {
-            return null;
-        }
-
-        System.out.println("Normalizing note: " + note);
-        System.out.println("Is in ENHARMONIC_MAP? " + ENHARMONIC_MAP.containsKey(note));
-        // Check if the note has an enharmonic equivalent
-        if (ENHARMONIC_MAP.containsKey(note)) {
-            String result = ENHARMONIC_MAP.get(note)[0];
-            System.out.println("Normalized to: " + result);
-            return result;  // Use sharp notation for internal processing
-        }
-
-        System.out.println("No normalization needed, returning: " + note);
-        // For natural notes or notes without enharmonic equivalents, return as is
-        return note;
-    }
-
-    private String formatNoteForDisplay(String note) {
-        // If the note doesn't need formatting, return as is
-        if (!ENHARMONIC_MAP.containsKey(note)) {
-            return note;
-        }
-
-        // Get both sharp and flat versions of the note
-        String sharpVersion = ENHARMONIC_MAP.get(note)[0];
-        String flatVersion = ENHARMONIC_MAP.get(note)[1];
-
-        // Use flat notation for flat scales - check both versions
-        if (FLAT_SCALES.contains(sharpVersion) || FLAT_SCALES.contains(flatVersion)) {
-            return flatVersion;
-        }
-
-        // Use sharp notation for sharp scales
-        if (SHARP_SCALES.contains(sharpVersion) || SHARP_SCALES.contains(flatVersion)) {
-            return sharpVersion;
-        }
-
-        // For natural note scales, prefer flat notation for Bb
-        if (note.equals(A_SHARP) || note.equals(B_FLAT)) {
-            return B_FLAT;
-        }
-
-        // For G#/Ab specifically, use G# notation only if not in a flat scale
-        if ((note.equals(G_SHARP) || note.equals(A_FLAT) || 
-             sharpVersion.equals(G_SHARP) || flatVersion.equals(A_FLAT)) &&
-            !FLAT_SCALES.contains(sharpVersion) && !FLAT_SCALES.contains(flatVersion)) {
-            return G_SHARP;
-        }
-
-        return sharpVersion;  // Default to sharp notation
     }
 } 
