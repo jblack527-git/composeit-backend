@@ -76,7 +76,7 @@ public class ScaleControllerTest {
 		String json = """
 				{ "tonic": "C", "quality": "BLUES" }
 				""";
-		mockMvc.perform(post("/api/scales/semitones")
+		mockMvc.perform(post("/api/semitones")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(json))
 				.andExpect(status().isBadRequest());
@@ -87,7 +87,7 @@ public class ScaleControllerTest {
 		String json = """
 				{ "tonic": "H", "quality": "MAJOR" }
 				""";
-		mockMvc.perform(post("/api/scales/semitones")
+		mockMvc.perform(post("/api/semitones")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(json))
 				.andExpect(status().isBadRequest());
