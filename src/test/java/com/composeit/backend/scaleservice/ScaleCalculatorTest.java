@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import com.composeit.backend.common.Constants;
 import com.composeit.backend.scaleservice.models.Quality;

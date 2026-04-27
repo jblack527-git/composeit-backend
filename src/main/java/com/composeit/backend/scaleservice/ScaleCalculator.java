@@ -118,7 +118,7 @@ public class ScaleCalculator {
 		if (normalizedTonic == null || !SEMITONES.contains(normalizedTonic)) {
 			return null;
 		}
-		
+
 		// Get scale components
 		List<String> semitones = getSemitonesFromScale(normalizedTonic, quality);
 		if (semitones.isEmpty()) {
