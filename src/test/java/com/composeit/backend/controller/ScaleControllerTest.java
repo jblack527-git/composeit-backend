@@ -72,6 +72,28 @@ public class ScaleControllerTest {
     }
 	
 	@Test
+	void shouldReturn400ForUnknownQuality() throws Exception {
+		String json = """
+				{ "tonic": "C", "quality": "BLUES" }
+				""";
+		mockMvc.perform(post("/api/scales/semitones")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void shouldReturn400ForUnknownTonic() throws Exception {
+		String json = """
+				{ "tonic": "H", "quality": "MAJOR" }
+				""";
+		mockMvc.perform(post("/api/scales/semitones")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
 	public void shouldGetCorrectScales() throws Exception {
 		List<String> scales = List.of(Constants.F + " " + Quality.MAJOR.name(), 
 				Constants.D + " " + Quality.MINOR.name());
