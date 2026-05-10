@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.composeit.backend.dto.*;
@@ -34,17 +35,17 @@ public class ScaleController {
             return ResponseEntity.badRequest().body(new SemitonesResponse(List.of()));
         }
     }
-    
+
     @PostMapping("/scales-from-semitones")
     public ResponseEntity<ScalesResponse> getScales(@Valid @RequestBody ScalesRequest request) {
     	try {
-            List<String> scales = scaleService.getScalesFromSemitones(request.getSemitones());
+            List<String> scales = scaleService.getScalesFromSemitones(request.getSemitones(), request.isAdvanced());
             return ResponseEntity.ok(new ScalesResponse(scales));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ScalesResponse(List.of()));
         }
     }
-    
+
     @PostMapping("/chords")
     public ResponseEntity<ChordsResponse> getChords(@Valid @RequestBody SemitonesRequest request) {
         try {
@@ -54,17 +55,17 @@ public class ScaleController {
             return ResponseEntity.badRequest().body(new ChordsResponse(List.of()));
         }
     }
-    
+
     @PostMapping("/scales-from-chords")
     public ResponseEntity<ScalesResponse> getScalesFromChords(@Valid @RequestBody ChordsRequest request) {
         try {
-            List<String> scales = scaleService.getScalesFromChords(request.getChords());
+            List<String> scales = scaleService.getScalesFromChords(request.getChords(), request.isAdvanced());
             return ResponseEntity.ok(new ScalesResponse(scales));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ScalesResponse(List.of()));
         }
     }
-    
+
     @PostMapping("/profile")
     public ResponseEntity<ScaleProfileResponse> getScaleProfile(@Valid @RequestBody SemitonesRequest request) {
         try {
@@ -76,7 +77,8 @@ public class ScaleController {
     }
 
     @GetMapping("/qualities")
-    public ResponseEntity<QualitiesResponse> getQualities() {
-        return ResponseEntity.ok(scaleService.getQualities());
+    public ResponseEntity<QualitiesResponse> getQualities(
+            @RequestParam(defaultValue = "false") boolean advanced) {
+        return ResponseEntity.ok(scaleService.getQualities(advanced));
     }
 }
