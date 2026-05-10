@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Generated frontend build (copied in by copyFrontendToBackend task) ###
+src/main/resources/static/

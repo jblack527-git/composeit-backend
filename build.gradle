@@ -32,6 +32,25 @@ task cleanFrontendDist(type: Delete) {
     delete "${projectDir.parent}/frontend/dist"
 }
 
+task cleanBackendStatic(type: Delete) {
+    delete "${projectDir}/src/main/resources/static"
+}
+
+// Copy the React build into Spring Boot's static resources so the JAR can serve the frontend
+task copyFrontendToBackend(type: Copy) {
+    from "${projectDir.parent}/frontend/build"
+    into "${projectDir}/src/main/resources/static"
+    dependsOn buildFrontend, cleanBackendStatic
+
+    doLast {
+        println "Copied React build to Spring Boot static resources"
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn copyFrontendToBackend
+}
+
 task copyJarToElectron(type: Copy) {
     from "${buildDir}/libs/backend-0.0.1-SNAPSHOT.jar"
     into "${projectDir.parent}/frontend/build/static"
@@ -48,7 +67,7 @@ task copyJarToElectron(type: Copy) {
 task buildElectron(type: NpmTask) {
     workingDir = file("${projectDir.parent}/frontend")
     args = ['run', 'electron-pack']
-    dependsOn buildFrontend, cleanFrontendDist, copyJarToElectron
+    dependsOn cleanFrontendDist, copyJarToElectron
 
     doFirst {
         println "Checking JAR before Electron build:"
