@@ -34,7 +34,7 @@ public class ScaleCalculator {
 		return patternCalculator.getSemitonesFromScale(tonic, quality);
 	}
 
-	public List<String> getScaleFromSemitones(List<String> inputSemitones) {
+	public List<String> getScaleFromSemitones(List<String> inputSemitones, boolean advanced) {
 		if (inputSemitones == null || inputSemitones.isEmpty()) {
 			return List.of();
 		}
@@ -55,7 +55,7 @@ public class ScaleCalculator {
 
 		return SEMITONES.stream()
 			.filter(tonic -> !tonic.equals(B_SHARP) && !tonic.equals(E_SHARP)) // Skip theoretical scales
-			.flatMap(tonic -> Arrays.stream(Quality.values())
+			.flatMap(tonic -> Quality.allowed(advanced).stream()
 				.map(quality -> Map.entry(tonic, quality)))
 			.filter(entry -> {
 				List<String> scaleSemitones = getSemitonesFromScale(entry.getKey(), entry.getValue());
@@ -88,13 +88,13 @@ public class ScaleCalculator {
 		return chordCalculator.getChordsFromScale(tonic, quality);
 	}
 	
-	public List<String> getScaleFromChords(List<String> inputChords) {
+	public List<String> getScaleFromChords(List<String> inputChords, boolean advanced) {
 		List<Map.Entry<String, Quality>> parsedChords = inputChords.stream()
 			.map(chordCalculator::parseChord)
 			.collect(Collectors.toList());
 
 		return SEMITONES.stream()
-			.flatMap(tonic -> Arrays.stream(Quality.values())
+			.flatMap(tonic -> Quality.allowed(advanced).stream()
 				.filter(quality -> quality != Quality.DIMINISHED)
 				.map(quality -> Map.entry(tonic, quality)))
 			.filter(entry -> {

@@ -8,11 +8,21 @@ public class ScalesRequest {
 	@NotEmpty(message = "Semitones must not be empty")
 	private List<String> semitones;
 
+	private boolean advanced = false;
+
     public List<String> getSemitones() {
         return semitones;
     }
 
     public void setSemitones(List<String> semitones) {
         this.semitones = semitones;
+    }
+
+    public boolean isAdvanced() {
+        return advanced;
+    }
+
+    public void setAdvanced(boolean advanced) {
+        this.advanced = advanced;
     }
 }

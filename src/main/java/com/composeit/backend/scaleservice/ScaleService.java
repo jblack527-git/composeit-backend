@@ -18,25 +18,25 @@ public class ScaleService {
     public List<String> getSemitones(String semitone, Quality quality) {
         return scalecalculator.getSemitonesFromScale(semitone, quality);
     }
-    
-    public List<String> getScalesFromSemitones(List<String> semitones) {
-    	return scalecalculator.getScaleFromSemitones(semitones);
+
+    public List<String> getScalesFromSemitones(List<String> semitones, boolean advanced) {
+    	return scalecalculator.getScaleFromSemitones(semitones, advanced);
     }
-    
+
     public List<String> getChords(String tonic, Quality quality) {
         return scalecalculator.getChordsFromScale(tonic, quality);
     }
-    
-    public List<String> getScalesFromChords(List<String> chords) {
-        return scalecalculator.getScaleFromChords(chords);
+
+    public List<String> getScalesFromChords(List<String> chords, boolean advanced) {
+        return scalecalculator.getScaleFromChords(chords, advanced);
     }
-    
+
     public ScaleProfile getScaleProfile(String tonic, Quality quality) {
         return scalecalculator.getScaleProfile(tonic, quality);
     }
 
-    public QualitiesResponse getQualities() {
-        List<QualityEntry> entries = Arrays.stream(Quality.values())
+    public QualitiesResponse getQualities(boolean advanced) {
+        List<QualityEntry> entries = Quality.allowed(advanced).stream()
             .map(q -> new QualityEntry(q.name(), formatQualityLabel(q.name())))
             .collect(Collectors.toList());
         return new QualitiesResponse(entries);

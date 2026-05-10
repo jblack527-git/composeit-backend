@@ -7,6 +7,8 @@ public class ChordsRequest {
     @NotEmpty(message = "Chords must not be empty")
     private List<String> chords;
 
+    private boolean advanced = false;
+
     public List<String> getChords() {
         return chords;
     }
@@ -14,4 +16,12 @@ public class ChordsRequest {
     public void setChords(List<String> chords) {
         this.chords = chords;
     }
-} 
+
+    public boolean isAdvanced() {
+        return advanced;
+    }
+
+    public void setAdvanced(boolean advanced) {
+        this.advanced = advanced;
+    }
+}
